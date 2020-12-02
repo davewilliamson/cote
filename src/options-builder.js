@@ -12,6 +12,9 @@ const defaultOptions = {
     broadcast: null,
     multicast: null,
     logUnknownEvents: true,
+    readinessProbe: false,
+    readinessProbePort: 5555,
+    readinessProbeServices: '',
 };
 
 const envVarOptionsMap = {
@@ -26,6 +29,9 @@ const envVarOptionsMap = {
     COTE_LOG_UNKNOWN_EVENTS: ['logUnknownEvents', parser.bool],
     COTE_NODE_TIMEOUT: ['nodeTimeout', parser.int],
     COTE_IGNORE_PROCESS: ['ignoreProcess', parser.bool],
+    COTE_READINESS_PROBE: ['readinessProbe', parser.bool],
+    COTE_READINESS_PROBE_PORT: ['readinessProbePort', parser.int],
+    COTE_READINESS_PROBE_SERVICES: ['readinessProbeServices', parser.str],
 };
 
 module.exports = (options) => {

@@ -1,5 +1,6 @@
 const EventEmitter = require('eventemitter2').EventEmitter2;
 const Discovery = require('./discovery');
+const ReadinessProbe = require('../readiness');
 
 module.exports = class Component extends EventEmitter {
     constructor(advertisement, discoveryOptions = {}) {
@@ -17,6 +18,15 @@ module.exports = class Component extends EventEmitter {
 
         this.discoveryOptions = { ...Discovery.defaults, ...discoveryOptions };
         this.discoveryOptions.address = this.discoveryOptions.address || '0.0.0.0';
+
+        if (this.discoveryOptions.readinessProbe) {
+            console.log(`Readiness probe requested on port ${this.discoveryOptions.readinessProbePort}`);
+            this.readinessConfig = {
+                services: this.discoveryOptions.readinessProbeServices.split(','),
+                httpPort: this.discoveryOptions.readinessProbePort,
+            };
+            this.readinessProbe = new ReadinessProbe(this);
+        }
     }
 
     startDiscovery() {
@@ -44,9 +54,17 @@ module.exports = class Component extends EventEmitter {
         });
     }
 
-    onAdded() { };
+    onAdded(obj) {
+        if (this.discoveryOptions.readinessProbe) {
+            this.readinessProbe.addService(obj.advertisement.name);
+        }
+    };
 
-    onRemoved() { };
+    onRemoved() {
+        if (this.discoveryOptions.readinessProbe) {
+            this.readinessProbe.removeService(obj.advertisement.name);
+        }
+    };
 
     close() {
         this.sock && this.sock.close();
