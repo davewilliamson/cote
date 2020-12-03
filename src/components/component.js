@@ -60,7 +60,7 @@ module.exports = class Component extends EventEmitter {
         }
     };
 
-    onRemoved() {
+    onRemoved(obj) {
         if (this.discoveryOptions.readinessProbe) {
             this.readinessProbe.removeService(obj.advertisement.name);
         }
