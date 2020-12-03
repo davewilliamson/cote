@@ -1,5 +1,5 @@
 const http = require('http');
-const DEFAULT_CONTENT_TYPE = {'Content-Type': 'text/html'};
+const DEFAULT_CONTENT_TYPE = { 'Content-Type': 'text/html' };
 
 module.exports = class ReadinessProbe {
     constructor(Component) {
