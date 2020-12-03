@@ -66,6 +66,22 @@ module.exports = class Component extends EventEmitter {
         }
     };
 
+    readinessAddService(service) {
+        if (this.discoveryOptions.readinessProbe) {
+            this.readinessProbe.addService(service);
+        }
+        // Readyness probe not enabled, return false
+        return false;
+    }
+
+    readinessRemoveService(service) {
+        if (this.discoveryOptions.readinessProbe) {
+            this.readinessProbe.removeService(service);
+        }
+        // Readyness probe not enabled, return false
+        return false;
+    }
+
     close() {
         this.sock && this.sock.close();
         this.discovery && this.discovery.stop();

@@ -30,22 +30,59 @@ module.exports = class ReadinessProbe {
 
         const self = this;
         http.createServer(function readinessChecker(req, res) {
-            if (req.url === '/liveness') {
+            function returnOK(res) {
                 res.writeHead(200, DEFAULT_CONTENT_TYPE);
                 res.write('OK');
+                res.end();
+            }
+
+            function returnKO(res) {
+                res.writeHead(503, DEFAULT_CONTENT_TYPE);
+                res.write('KO');
+                res.end();
+            }
+
+            if (req.url === '/liveness') {
+                let respondedLiveness = false;
+                const livenessTimeoutMonitor = setTimeout(function livenessTimeout() {
+                    console.log('Liveness listeners timed out');
+                    respondedLiveness = true;
+                    returnKO(res);
+                }, 5000);
+                self.Component.emitAsync('livenessCheck').then(function livenessCheckEventResolved() {
+                    console.log('All Liveness listeners were resolved');
+                    clearTimeout(livenessTimeoutMonitor);
+                    if (!respondedLiveness) returnOK(res);
+                }).catch(function livenessCheckEventRejected(err) {
+                    console.log('Liveness listener was rejected');
+                    clearTimeout(livenessTimeoutMonitor);
+                    if (!respondedLiveness) returnKO(res);
+                });
             } else if (req.url === '/readiness') {
                 if (self.SERVICE_READY) {
-                    res.writeHead(200, DEFAULT_CONTENT_TYPE);
-                    res.write('OK');
+                    let respondedReadiness = false;
+                    const readinessTimeoutMonitor = setTimeout(function readinessTimeout() {
+                        console.log('Readiness listeners timed out');
+                        respondedReadiness = true;
+                        returnKO(res);
+                    }, 5000);
+
+                    self.Component.emitAsync('readinessCheck').then(function readinessCheckEventResolved() {
+                        console.log('All Readiness listeners were resolved');
+                        clearTimeout(readinessTimeoutMonitor);
+                        if (!respondedReadiness) returnOK(res);
+                    }).catch(function readinessCheckEventRejected(err) {
+                        console.log('Readiness listener was rejected');
+                        clearTimeout(readinessTimeoutMonitor);
+                        if (!respondedReadiness) returnKO(res);
+                    });
+
                 } else {
-                    res.writeHead(503, DEFAULT_CONTENT_TYPE);
-                    res.write('KO');
+                    returnKO(res);
                 }
             } else {
-                res.writeHead(404, DEFAULT_CONTENT_TYPE);
-                res.write('Not found!');
+                returnKO(res);
             }
-            res.end();
         }).listen(this.config.httpPort);
     }
 
