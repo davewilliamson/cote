@@ -69,6 +69,7 @@ module.exports = class Component extends EventEmitter {
     readinessAddService(service) {
         if (this.discoveryOptions.readinessProbe) {
             this.readinessProbe.addService(service);
+            return true;
         }
         // Readyness probe not enabled, return false
         return false;
@@ -77,6 +78,7 @@ module.exports = class Component extends EventEmitter {
     readinessRemoveService(service) {
         if (this.discoveryOptions.readinessProbe) {
             this.readinessProbe.removeService(service);
+            return true;
         }
         // Readyness probe not enabled, return false
         return false;
